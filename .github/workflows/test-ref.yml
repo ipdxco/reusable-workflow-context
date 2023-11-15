@@ -20,3 +20,8 @@ jobs:
             echo "$REUSABLE_WORKFLOW_REF (REUSABLE_WORKFLOW_REF) != refs/heads/main"
             exit 1
           fi
+
+          if [[ "$REUSABLE_WORKFLOW_SHA" == "" ]]; then
+            echo "$REUSABLE_WORKFLOW_SHA (REUSABLE_WORKFLOW_SHA) == ''"
+            exit 1
+          fi

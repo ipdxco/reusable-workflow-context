@@ -1,0 +1,27 @@
+name: Test (sha)
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+jobs:
+  reusable:
+    uses: ipdxco/reusable-workflow-context/.github/workflows/reusable.yml@d97024948175c71109e17aa55e62ff0bc9517fa0
+  test:
+    name: Test
+    needs: [reusable]
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          REUSABLE_WORKFLOW_REF: ${{ needs.reusable.outputs.ref }}
+          REUSABLE_WORKFLOW_SHA: ${{ needs.reusable.outputs.sha }}
+        run: |
+          if [[ "$REUSABLE_WORKFLOW_REF" != "" ]]; then
+            echo "$REUSABLE_WORKFLOW_REF (REUSABLE_WORKFLOW_REF) != ''"
+            exit 1
+          fi
+
+          if [[ "$REUSABLE_WORKFLOW_SHA" != "d97024948175c71109e17aa55e62ff0bc9517fa0" ]]; then
+            echo "$REUSABLE_WORKFLOW_SHA (REUSABLE_WORKFLOW_SHA) != d97024948175c71109e17aa55e62ff0bc9517fa0"
+            exit 1
+          fi
