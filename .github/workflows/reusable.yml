@@ -1,0 +1,25 @@
+name: Reusable
+on:
+  workflow_call:
+    outputs:
+      ref:
+        description: 'The ref the reusable workflow was called with.'
+        value: ${{ jobs.reusable.outputs.ref }}
+      sha:
+        description: 'The sha the reusable workflow was called with.'
+        value: ${{ jobs.reusable.outputs.sha }}
+jobs:
+  reusable:
+    name: Reusable
+    runs-on: ubuntu-latest
+    outputs:
+      ref: ${{ steps.reusable-workflow.outputs.ref }}
+      sha: ${{ steps.reusable-workflow.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          path: reusable-workflow-context
+      - id: reusable-workflow
+        uses: ./reusable-workflow-context
+        with:
+          path: reusable.yml

@@ -1,0 +1,22 @@
+name: Test (ref)
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+jobs:
+  reusable:
+    uses: ipdxco/reusable-workflow-context/.github/workflows/reusable.yml@main
+  test:
+    name: Test
+    needs: [reusable]
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          REUSABLE_WORKFLOW_REF: ${{ needs.reusable.outputs.ref }}
+          REUSABLE_WORKFLOW_SHA: ${{ needs.reusable.outputs.sha }}
+        run: |
+          if [[ "$REUSABLE_WORKFLOW_REF" != "refs/heads/main" ]]; then
+            echo "$REUSABLE_WORKFLOW_REF (REUSABLE_WORKFLOW_REF) != refs/heads/main"
+            exit 1
+          fi

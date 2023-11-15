@@ -1,0 +1,27 @@
+name: Test (local)
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+jobs:
+  reusable:
+    uses: ./.github/workflows/reusable.yml
+  test:
+    name: Test
+    needs: [reusable]
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          REUSABLE_WORKFLOW_REF: ${{ needs.reusable.outputs.ref }}
+          REUSABLE_WORKFLOW_SHA: ${{ needs.reusable.outputs.sha }}
+        run: |
+          if [[ "$REUSABLE_WORKFLOW_REF" != "$GITHUB_REF" ]]; then
+            echo "$REUSABLE_WORKFLOW_REF (REUSABLE_WORKFLOW_REF) != $GITHUB_REF"
+            exit 1
+          fi
+
+          if [[ "$REUSABLE_WORKFLOW_SHA" != "$GITHUB_SHA" ]]; then
+            echo "$REUSABLE_WORKFLOW_SHA (REUSABLE_WORKFLOW_SHA) != $GITHUB_SHA"
+            exit 1
+          fi
