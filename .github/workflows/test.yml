@@ -1,0 +1,66 @@
+name: Test
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+jobs:
+  local:
+    uses: ./.github/workflows/reusable.yml
+  main:
+    uses: ipdxco/reusable-workflow-context/.github/workflows/reusable.yml@main
+  test:
+    name: Test
+    needs:
+      - local
+      - main
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          path: local
+      - uses: actions/checkout@v3
+        with:
+          path: main
+          ref: main
+      - id: local
+        working-directory: local
+        run: |
+          git rev-parse --abbrev-ref HEAD | xargs -I {} echo "ref={}" | tee -a $GITHUB_OUTPUTS
+          git rev-parse HEAD | xargs -I {} echo "sha={}" | tee -a $GITHUB_OUTPUTS
+      - id: main
+        working-directory: main
+        run: |
+          git rev-parse --abbrev-ref HEAD | xargs -I {} echo "ref={}" | tee -a $GITHUB_OUTPUTS
+          git rev-parse HEAD | xargs -I {} echo "sha={}" | tee -a $GITHUB_OUTPUTS
+      - env:
+          REUSABLE_LOCAL_REF: ${{ needs.local.outputs.ref }}
+          REUSABLE_LOCAL_SHA: ${{ needs.local.outputs.sha }}
+          REUSABLE_MAIN_REF: ${{ needs.main.outputs.ref }}
+          REUSABLE_MAIN_SHA: ${{ needs.main.outputs.sha }}
+          LOCAL_REF: ${{ steps.local.outputs.ref }}
+          LOCAL_SHA: ${{ steps.local.outputs.sha }}
+          MAIN_REF: ${{ steps.main.outputs.ref }}
+          MAIN_SHA: ${{ steps.main.outputs.sha }}
+        run: |
+          env | sort
+
+          if [[ "$REUSABLE_LOCAL_REF" != "$LOCAL_REF" ]]; then
+            echo "REUSABLE_LOCAL_REF ($REUSABLE_LOCAL_REF) != LOCAL_REF ($LOCAL_REF)"
+            exit 1
+          fi
+
+          if [[ "$REUSABLE_LOCAL_SHA" != "$LOCAL_SHA" ]]; then
+            echo "REUSABLE_LOCAL_SHA ($REUSABLE_LOCAL_SHA) != LOCAL_SHA ($LOCAL_SHA)"
+            exit 1
+          fi
+
+          if [[ "$REUSABLE_MAIN_REF" != "$MAIN_REF" ]]; then
+            echo "REUSABLE_MAIN_REF ($REUSABLE_MAIN_REF) != MAIN_REF ($MAIN_REF)"
+            exit 1
+          fi
+
+          if [[ "$REUSABLE_MAIN_SHA" != "$MAIN_SHA" ]]; then
+            echo "REUSABLE_MAIN_SHA ($REUSABLE_MAIN_SHA) != MAIN_SHA ($MAIN_SHA)"
+            exit 1
+          fi

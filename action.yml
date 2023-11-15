@@ -1,0 +1,25 @@
+name: 'Reusable Workflow Context'
+description: 'Extracts metadata of the reusable workflow it is used in'
+branding:
+  icon: 'award'
+  color: 'green'
+inputs:
+  path:
+    description: 'The path where the reusable workflow is located.'
+    required: true
+outputs:
+  ref:
+    description: 'For a reusable workflow executing an action, this is the ref of the reusable workflow being executed.'
+    value: ${{ toJSON(steps.context.outputs.json).ref }}
+  sha:
+    description: 'For a reusable workflow executing an action, this is the sha of the reusable workflow being executed.'
+    value: ${{ toJSON(steps.context.outputs.json).sha }}
+runs:
+  using: 'composite'
+  steps:
+    - id: context
+      env:
+        WORKFLOW_PATH: ${{ inputs.path }}
+        GITHUB_TOKEN: ${{ github.token }}
+      run: gh api repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} --jq '.referenced_workflows // [] | map(select(.path | test(env.WORKFLOW_PATH))) | .[0] // {}' | xargs -I {} echo "json={}" | tee -a $GITHUB_OUTPUT
+      shell: bash
