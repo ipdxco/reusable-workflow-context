@@ -6,7 +6,7 @@ on:
   pull_request:
 jobs:
   reusable:
-    uses: ipdxco/reusable-workflow-context/.github/workflows/reusable.yml@d97024948175c71109e17aa55e62ff0bc9517fa0
+    uses: ipdxco/reusable-workflow-context/.github/workflows/reusable.yml@e0cb8a05f123873388b5079c96acfe236f59a870
   test:
     name: Test
     needs: [reusable]
